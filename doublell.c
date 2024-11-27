@@ -11,7 +11,7 @@ struct node *start = NULL;
 struct node *create_ll(struct node *);
 void display(struct node *);
 struct node *insert_after(struct node *);
-struct node *delete_after(struct node *);
+struct node *delete_node(struct node *);
 
 struct node *create_ll(struct node *start) {
     struct node *newnode, *ptr;
@@ -59,15 +59,14 @@ void display(struct node *start) {
     printf("NULL\n");
 }
 
-// Function to insert a node after a specific value
-struct node *insert_after(struct node *start) {
+struct node *insert_left(struct node *start) {
     struct node *ptr, *newnode;
     int num, val;
 
     printf("\nEnter the data: ");
     scanf("%d", &num);
 
-    printf("\nEnter the value after which the node has to be inserted: ");
+    printf("\nEnter the value before which the node has to be inserted: ");
     scanf("%d", &val);
 
     ptr = start;
@@ -82,44 +81,57 @@ struct node *insert_after(struct node *start) {
 
     newnode = (struct node *)malloc(sizeof(struct node));
     newnode->data = num;
-    newnode->next = ptr->next;
-    newnode->prev = ptr;
 
-    if (ptr->next != NULL) {
-        ptr->next->prev = newnode;
+    if (ptr->prev == NULL) {
+        newnode->next = ptr;
+        newnode->prev = NULL;
+        ptr->prev = newnode;
+        start = newnode; 
+    } else {
+        newnode->next = ptr;
+        newnode->prev = ptr->prev;
+        ptr->prev->next = newnode;
+        ptr->prev = newnode;
     }
-    ptr->next = newnode;
 
     return start;
 }
 
-struct node *delete_after(struct node *start) {
+
+struct node *delete_node(struct node *start) {
     struct node *ptr, *temp;
     int val;
 
-    printf("\nEnter the value after which the node has to be deleted: ");
+    printf("\nEnter the value where the node has to be deleted: ");
     scanf("%d", &val);
-
     ptr = start;
     while (ptr != NULL && ptr->data != val) {
         ptr = ptr->next;
     }
-
-    if (ptr == NULL || ptr->next == NULL) {
-        printf("No node found to delete after the value %d.\n", val);
+    if (ptr == NULL) {
+        printf("Node with value %d not found.\n", val);
         return start;
     }
 
-    temp = ptr->next;
-    ptr->next = temp->next;
+   if (ptr == start) {
+        start = ptr->next; 
+        if (start != NULL) {
+            start->prev = NULL;  
+        }
+    } 
 
-    if (temp->next != NULL) {
-        temp->next->prev = ptr;
+    else {
+        ptr->prev->next = ptr->next;  
+        if (ptr->next != NULL) {
+            ptr->next->prev = ptr->prev; 
+        }
     }
 
-    free(temp);
+    free(ptr);
+
     return start;
 }
+
 
 int main() {
     int choice = 0;
@@ -127,8 +139,8 @@ int main() {
     printf("MENU\n");
     printf("1. Create List\n");
     printf("2. Display List\n");
-    printf("3. Insert After\n");
-    printf("4. Delete After\n");
+    printf("3. Insert left\n");
+    printf("4. Delete node\n");
     printf("5. Exit\n");
 
     while (choice != 5) {
@@ -144,10 +156,10 @@ int main() {
                 display(start);
                 break;
             case 3:
-                start = insert_after(start);
+                start = insert_left(start);
                 break;
             case 4:
-                start = delete_after(start);
+                start = delete_node(start);
                 break;
             case 5:
                 printf("Exiting program.\n");
